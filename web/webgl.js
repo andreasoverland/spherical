@@ -3,26 +3,10 @@ let cubeRotation = 0.0;
 const initialPositions = [];
 const numPositions = 50;
 
-function test(){
-    let x = Math.random()-Math.random();
-    let y = Math.random()-Math.random();
-    let z = Math.random()-Math.random();
-    let vector = [];
+const canvas = document.querySelector('#glcanvas');
+const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 
-    normalize( vector,[x,y,z] );
 
-    console.log( vector );
-}
-
-function normalize(target,source){
-    let length = Math.sqrt(source[0]*source[0]+source[1]*source[1]+source[2]*source[2]);
-    target[0] = source[0]/length;
-    target[1] = source[1]/length;
-    target[2] = source[2]/length;
-}
-
-// test();
-main();
 
 function createInitialPositions(){
 
@@ -38,8 +22,10 @@ function createInitialPositions(){
     }
 }
 
-function updatePositions(){
+let objectPositionBuffer = null;
+let objectPositions = [];
 
+function updatePositions(){
 
     for( let n=0;n<numPositions;n++){
 
@@ -63,21 +49,27 @@ function updatePositions(){
         var x = cosDistanceTraveledRadians - sinlat1 * sinlat2;
         var lon2 = lon1 + Math.atan2(y, x);
 
-
         pos.x = (Math.cos(lat2) * Math.cos(lon2));
         pos.y = (Math.cos(lat2) * Math.sin(lon2));
         pos.z = (Math.sin(lat2));
+
+        objectPositions[n*3  ] = pos.x;
+        objectPositions[n*3+1] = pos.y;
+        objectPositions[n*3+2] = pos.z;
     }
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objectPositions), gl.STATIC_DRAW);
 }
 
 //
 // Start here
 //
 function main() {
-    const canvas = document.querySelector('#glcanvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 
     createInitialPositions();
+
+    objectPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, objectPositionBuffer);
 
 
     // If we don't have a GL context, give up now
@@ -482,3 +474,5 @@ function loadShader(gl, type, source) {
     return shader;
 
 }
+
+main();
