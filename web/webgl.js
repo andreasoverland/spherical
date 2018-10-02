@@ -7,6 +7,8 @@ const canvas = document.querySelector('#glcanvas');
 const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 
 
+// TODO: first, draw thet effin sphere
+
 
 function createInitialPositions(){
 
@@ -370,6 +372,24 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
                 offset);
             gl.enableVertexAttribArray(
                 programInfo.attribLocations.vertexPosition);
+        }
+
+        {
+            const numComponents = 3*numPositions;
+            const type = gl.FLOAT;
+            const normalize = false;
+            const stride = 0;
+            const offset = 0;
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+            gl.vertexAttribPointer(
+                programInfo.attribLocations.otherObjectPositions,
+                numComponents,
+                type,
+                normalize,
+                stride,
+                offset);
+            gl.enableVertexAttribArray(
+                programInfo.attribLocations.otherObjectPositions);
         }
 
         // Tell WebGL how to pull out the colors from the color buffer
