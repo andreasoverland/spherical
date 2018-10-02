@@ -17,9 +17,9 @@ function createInitialPositions(){
         let pos = {};
 
         pos.initialLon = Math.random()*Math.PI*2;
-        pos.initialLat = Math.random()*Math.PI;
+        pos.initialLat = Math.random()*Math.PI*1.9;
         pos.initialDirection = Math.random()*Math.PI*2;
-        pos.speed = Math.random()/10.0+0.1;
+        pos.speed = 0;
         initialPositions.push(pos);
     }
 
@@ -28,6 +28,7 @@ function createInitialPositions(){
 
 let objectPositionBuffer = null;
 let objectPositions = [];
+
 
 function updatePositions(){
 
