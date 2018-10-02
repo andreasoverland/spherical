@@ -1,7 +1,7 @@
 let cubeRotation = 0.0;
 
 const initialPositions = [];
-const numPositions = 5000;
+const numPositions = 50;
 
 const canvas = document.querySelector('#glcanvas');
 const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -17,7 +17,7 @@ function createInitialPositions(){
         let pos = {};
 
         pos.initialLon = Math.random()*Math.PI*2;
-        pos.initialLat = Math.random()*Math.PI*1.9;
+        pos.initialLat = -Math.PI*0.5    + Math.random()*Math.PI ;
         pos.initialDirection = Math.random()*Math.PI*2;
         pos.speed = 0;
         initialPositions.push(pos);
@@ -26,7 +26,6 @@ function createInitialPositions(){
 
 }
 
-let objectPositionBuffer = null;
 let objectPositions = [];
 
 
@@ -62,7 +61,7 @@ function updatePositions(){
         objectPositions[n*2+1] = lon2;
     }
 
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objectPositions), gl.STATIC_DRAW);
+   // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objectPositions), gl.STATIC_DRAW);
 }
 
 //
@@ -71,9 +70,6 @@ function updatePositions(){
 function main() {
 
     createInitialPositions();
-
-    objectPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, objectPositionBuffer);
 
 
     // If we don't have a GL context, give up now
@@ -88,9 +84,9 @@ function main() {
     const vsSource = `
     attribute vec4 aVertexPosition;
     attribute vec4 aVertexColor;
-    attribute vec2 otherObjectPositions;
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
+    uniform float otherObjectPositions[`+numPositions+`];
     varying lowp vec4 vColor;
     void main(void) {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
@@ -120,11 +116,12 @@ function main() {
         attribLocations: {
             vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
             vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
-            otherObjectPositions: gl.getAttribLocation(shaderProgram,'otherObjectPositions'),
+
         },
         uniformLocations: {
             projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
             modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+            otherObjectPositions: gl.getUniformLocation(shaderProgram,'otherObjectPositions'),
         },
     };
 
@@ -305,7 +302,7 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
 
     mat4.rotate( projectionMatrix, projectionMatrix, 0.2, [1,0,0]);
     mat4.translate( projectionMatrix, projectionMatrix, [0,-1,-5]);
-    mat4.rotate( projectionMatrix, projectionMatrix, cubeRotation/10,[0,1,0]); // rotate camera around Y axis
+    mat4.rotate( projectionMatrix, projectionMatrix, cubeRotation/2,[0,1,0]); // rotate camera around Y axis
 
     for (let n = 0; n < numPositions; n++) {
         // Set the drawing position to the "identity" point, which is
@@ -322,7 +319,7 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
             modelViewMatrix,     // matrix to translate
             [pos.x,pos.y,pos.z]);  // amount to translate
 
-        mat4.scale(modelViewMatrix, modelViewMatrix, [0.01, 0.01, 0.01]);
+        mat4.scale(modelViewMatrix, modelViewMatrix, [0.1, 0.1, 0.1]);
 
 /*        mat4.rotate(modelViewMatrix,  // destination matrix
             modelViewMatrix,  // matrix to rotate
@@ -369,23 +366,6 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
                 programInfo.attribLocations.vertexPosition);
         }
 
-        {
-            const numComponents = 2*numPositions;
-            const type = gl.FLOAT;
-            const normalize = false;
-            const stride = 0;
-            const offset = 0;
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.otherObjectPositions);
-            gl.vertexAttribPointer(
-                programInfo.attribLocations.otherObjectPositions,
-                numComponents,
-                type,
-                normalize,
-                stride,
-                offset);
-            gl.enableVertexAttribArray(
-                programInfo.attribLocations.otherObjectPositions);
-        }
 
         // Tell WebGL how to pull out the colors from the color buffer
         // into the vertexColor attribute.
@@ -426,8 +406,14 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
             false,
             modelViewMatrix);
 
+        // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+
+
+        gl.uniform1fv(programInfo.uniformLocations.otherObjectPositions, new Float32Array(objectPositions) );
+
         {
-            const vertexCount = 36;
+            const vertexCount = 3;
             const type = gl.UNSIGNED_SHORT;
             const offset = 0;
             gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
