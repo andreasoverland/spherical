@@ -1,7 +1,7 @@
 let cubeRotation = 0.0;
 
 const initialPositions = [];
-const numPositions = 50;
+const numPositions = 5000;
 
 const canvas = document.querySelector('#glcanvas');
 const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -17,11 +17,13 @@ function createInitialPositions(){
         let pos = {};
 
         pos.initialLon = Math.random()*Math.PI*2;
-        pos.initialLat = Math.random()*Math.PI*2;
+        pos.initialLat = Math.random()*Math.PI;
         pos.initialDirection = Math.random()*Math.PI*2;
-        pos.speed = Math.random()+0.5;
+        pos.speed = Math.random()/10.0+0.1;
         initialPositions.push(pos);
     }
+
+
 }
 
 let objectPositionBuffer = null;
@@ -85,13 +87,13 @@ function main() {
     const vsSource = `
     attribute vec4 aVertexPosition;
     attribute vec4 aVertexColor;
-    attribute vec4 otherObjectPositions;
+    attribute vec2 otherObjectPositions;
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
     varying lowp vec4 vColor;
     void main(void) {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-      vColor = vec4(0.5+(sin(aVertexPosition.x)/2.0),0.5+(sin(aVertexPosition.y)/2.0),0.5+(cos(aVertexPosition.z)/2.0),1.0) ;
+      vColor = vec4(0.5+(sin(gl_Position.x)/2.0),0.5+(sin(gl_Position.y)/2.0),0.5+(cos(gl_Position.z)/2.0),1.0) ;
     }
   `;
 
@@ -148,8 +150,6 @@ function main() {
 //
 // initBuffers
 //
-// Initialize the buffers we'll need. For this demo, we just
-// have one object -- a simple three-dimensional cube.
 //
 function initBuffers(gl) {
 
@@ -256,8 +256,7 @@ function initBuffers(gl) {
 
     // Now send the element array to GL
 
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,
-        new Uint16Array(indices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 
     return {
         position: positionBuffer,
@@ -295,7 +294,6 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
     const zFar = 100.0;
     const projectionMatrix = mat4.create();
 
-
     // note: glmatrix.js always has the first argument
     // as the destination to receive the result.
     mat4.perspective(projectionMatrix,
@@ -304,12 +302,9 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
         zNear,
         zFar);
 
-
     mat4.rotate( projectionMatrix, projectionMatrix, 0.2, [1,0,0]);
-    mat4.translate( projectionMatrix, projectionMatrix, [0,-1,-5])
-    mat4.rotate( projectionMatrix, projectionMatrix, cubeRotation/3,[0,1,0]); // animate
-
-
+    mat4.translate( projectionMatrix, projectionMatrix, [0,-1,-5]);
+    mat4.rotate( projectionMatrix, projectionMatrix, cubeRotation/10,[0,1,0]); // rotate camera around Y axis
 
     for (let n = 0; n < numPositions; n++) {
         // Set the drawing position to the "identity" point, which is
@@ -379,7 +374,7 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
             const normalize = false;
             const stride = 0;
             const offset = 0;
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.otherObjectPositions);
             gl.vertexAttribPointer(
                 programInfo.attribLocations.otherObjectPositions,
                 numComponents,
