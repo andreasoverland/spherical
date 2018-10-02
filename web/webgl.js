@@ -55,9 +55,8 @@ function updatePositions(){
         pos.y = (Math.cos(lat2) * Math.sin(lon2));
         pos.z = (Math.sin(lat2));
 
-        objectPositions[n*3  ] = pos.x;
-        objectPositions[n*3+1] = pos.y;
-        objectPositions[n*3+2] = pos.z;
+        objectPositions[n*2  ] = lat2;
+        objectPositions[n*2+1] = lon2;
     }
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(objectPositions), gl.STATIC_DRAW);
@@ -375,7 +374,7 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
         }
 
         {
-            const numComponents = 3*numPositions;
+            const numComponents = 2*numPositions;
             const type = gl.FLOAT;
             const normalize = false;
             const stride = 0;
