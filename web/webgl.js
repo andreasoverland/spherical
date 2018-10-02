@@ -123,9 +123,9 @@ function main() {
       float d = acos( sin(phi1)*sin(phi2) + cos(phi1) * cos(phi2) * cos(dLam) );
       
       
-      float dX = otherObjectPositions[3]-otherObjectPositions[0];
-      float dY = otherObjectPositions[4]-otherObjectPositions[1];
-      float dZ = otherObjectPositions[5]-otherObjectPositions[2];
+      float dX = rotatedPos.x-otherObjectPositions[0];
+      float dY = rotatedPos.y-otherObjectPositions[1];
+      float dZ = rotatedPos.z-otherObjectPositions[2];
       
       float c2 = sqrt( dX*dX+dY*dY+dZ*dZ );
       
@@ -134,7 +134,7 @@ function main() {
       float g = 0.5+aVertexPosition.y/2.0;
       float b = 0.5+aVertexPosition.x/2.0;
       
-      if( c < 0.1 ){
+      if( d < 0.1 ){
           r = 1.0;
           g = 1.0;
           b = 1.0;
