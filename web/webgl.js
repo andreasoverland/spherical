@@ -1,7 +1,7 @@
 let cubeRotation = 0.0;
 
 const initialPositions = [];
-const numPositions = 500;
+const numPositions = 50;
 
 function test(){
     let x = Math.random()-Math.random();
@@ -92,12 +92,13 @@ function main() {
     const vsSource = `
     attribute vec4 aVertexPosition;
     attribute vec4 aVertexColor;
+    attribute vec4 otherObjectPositions;
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
     varying lowp vec4 vColor;
     void main(void) {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-      vColor = aVertexColor;
+      vColor = vec4(0.5+(sin(aVertexPosition.x)/2.0),0.5+(sin(aVertexPosition.y)/2.0),0.5+(cos(aVertexPosition.z)/2.0),1.0) ;
     }
   `;
 
@@ -123,6 +124,7 @@ function main() {
         attribLocations: {
             vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
             vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
+            otherObjectPositions: gl.getAttribLocation(shaderProgram,'otherObjectPositions'),
         },
         uniformLocations: {
             projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
