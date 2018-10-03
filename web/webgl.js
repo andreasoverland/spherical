@@ -134,11 +134,16 @@ function main() {
       float g = 0.5+aVertexPosition.y/2.0;
       float b = 0.5+aVertexPosition.x/2.0;
       
-      if( d < 0.1 ){
+      if( c < 0.2 ){
           r = 1.0;
+      }
+      if( c2 < 0.2 ){
           g = 1.0;
+      }
+      if( d < 0.2 ) {
           b = 1.0;
       }
+      
       
    
       
@@ -277,7 +282,7 @@ function drawScene(gl, programInfo, deltaTime) {
 
     mat4.translate(projectionMatrix, projectionMatrix, [0, 0, -5]);
     mat4.rotate(projectionMatrix, projectionMatrix, 0.2, [1, 0, 0]);
-    mat4.rotate(projectionMatrix, projectionMatrix, cubeRotation/10, [0, 1, 0]); // rotate camera around Y axis
+    mat4.rotate(projectionMatrix, projectionMatrix, -Math.PI, [0, 1, 0]); // rotate camera around Y axis
 
     const modelViewMatrix = mat4.create();
 
@@ -335,7 +340,7 @@ function drawScene(gl, programInfo, deltaTime) {
         gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
     }
 
-
+ /*
     mat4.scale(modelViewMatrix, modelViewMatrix, [1.0/0.05, 1.0/0.05, 1.0/0.05]);
     mat4.translate(modelViewMatrix, modelViewMatrix, [-debugObjectPositions[0], -debugObjectPositions[1], -debugObjectPositions[2]]);
     mat4.translate(modelViewMatrix, modelViewMatrix, [debugObjectPositions[3], debugObjectPositions[4], debugObjectPositions[5]]);
@@ -350,7 +355,7 @@ function drawScene(gl, programInfo, deltaTime) {
         gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
     }
 
-
+*/
     // Update the rotation for the next draw
     updatePositions();
     cubeRotation += deltaTime;
