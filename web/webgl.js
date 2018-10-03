@@ -1,10 +1,14 @@
 let cubeRotation = 0.0;
 
 const initialPositions = [];
-const numPositions = 30;
+const numPositions = 200;
 
 const canvas = document.querySelector('#glcanvas');
-const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+const gl = canvas.getContext('webgl');
+
+canvas.width = window.innerWidth
+canvas.height = window.innerHeight
+gl.viewport(0, 0, canvas.width, canvas.height)
 
 function createInitialPositions() {
     for (let n = 0; n < numPositions; n++) {
@@ -12,19 +16,14 @@ function createInitialPositions() {
         pos.initialLon = Math.random() * Math.PI * 2;
         pos.initialLat = -Math.PI * 0.5 + Math.random() * Math.PI;
         pos.initialDirection = Math.random() * Math.PI * 2;
-        pos.speed = Math.random()*10.0 + 2.5;
+        pos.speed = Math.random() * 3;
+        pos.charge = Math.random()-Math.random();
         initialPositions.push(pos);
     }
 }
 
-
 let objectPositions = [];
-let debugObjectPositions = [];
 
-let maxLat = -10;
-let minLat = 10;
-let maxLon = -10;
-let minLon = 10;
 function updatePositions() {
 
     for (let n = 0; n < numPositions; n++) {
@@ -53,14 +52,10 @@ function updatePositions() {
         pos.y = (Math.cos(lat2) * Math.sin(lon2));
         pos.z = (Math.sin(lat2));
 
-        debugObjectPositions[n*3  ] = pos.x;
-        debugObjectPositions[n*3+1] = pos.y;
-        debugObjectPositions[n*3+2] = pos.z;
-
-        objectPositions[n * 3] = pos.x;
-        objectPositions[n * 3 + 1] = pos.y;
-        objectPositions[n * 3 + 2] = pos.z;
-
+        objectPositions[n * 4] = pos.x;
+        objectPositions[n * 4 + 1] = pos.y;
+        objectPositions[n * 4 + 2] = pos.z;
+        objectPositions[n * 4 + 3] = pos.charge;
 
     }
 
@@ -94,20 +89,26 @@ function main() {
     attribute vec4 aVertexColor;
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
-    uniform float otherObjectPositions[` + numPositions*3  + `];
+    uniform float otherObjectPositions[` + numPositions*4  + `];
+    varying vec4 vColor;
     
-    varying highp vec4 vColor;
     void main(void) {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
       
       vec4 rotatedPos = normalize( aVertexPosition );
-      vec4 otherPosN = normalize( vec4(otherObjectPositions[0],otherObjectPositions[1],otherObjectPositions[2],1.0) );
-      vec4 otherPosN2 = normalize( vec4(otherObjectPositions[3],otherObjectPositions[4],otherObjectPositions[5],1.0) );
-      vec4 otherPosN3 = normalize( vec4(otherObjectPositions[6],otherObjectPositions[7],otherObjectPositions[8],1.0) );
+      vec4 otherPositions[`+numPositions+`];
       
-      float r = cos( acos( dot( rotatedPos , otherPosN ) ) );
-      float g = cos( acos( dot( rotatedPos , otherPosN2 ) ) );
-      float b = cos( acos( dot( rotatedPos , otherPosN3 ) ) );
+      float f = 0.0;
+      
+      for( int i=0;i<`+numPositions+`;i++){
+        vec4 tv = normalize( vec4(otherObjectPositions[i*4],otherObjectPositions[i*4+1],otherObjectPositions[i*4+2],1.0) );
+        float r = acos( dot( rotatedPos , tv ) );
+        f +=  otherObjectPositions[i*4+3] / ( 0.01 + r*r );
+      }
+      
+      float r =  0.5 - 0.5*cos(f/30.0) ;
+      float g =  0.5 - 0.5*sin( -f/20.0) ;
+      float b =  0.5 - 0.5*sin(f/30.0) ;
       
       vColor = vec4( r,g,b,1.0);
     }
@@ -134,7 +135,6 @@ function main() {
         program: shaderProgram,
         attribLocations: {
             vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-            vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
         },
         uniformLocations: {
             projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
