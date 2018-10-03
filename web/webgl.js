@@ -7,20 +7,16 @@ const canvas = document.querySelector('#glcanvas');
 const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 
 function createInitialPositions() {
-
     for (let n = 0; n < numPositions; n++) {
-
         let pos = {};
-
         pos.initialLon = Math.random() * Math.PI * 2;
         pos.initialLat = -Math.PI * 0.5 + Math.random() * Math.PI;
         pos.initialDirection = Math.random() * Math.PI * 2;
         pos.speed = 5;
         initialPositions.push(pos);
     }
-
-
 }
+
 
 let objectPositions = [];
 let debugObjectPositions = [];
@@ -103,50 +99,51 @@ function main() {
     void main(void) {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
       
-      vec4 rotatedPos = aVertexPosition;
+      vec4 rotatedPos = normalize( aVertexPosition );
+      vec4 otherPosV = vec4(otherObjectPositions[0],otherObjectPositions[1],otherObjectPositions[2],1.0);
+      vec4 otherPosN = normalize( otherPosV );
+      
         
-      float phi1 = atan( rotatedPos.y, rotatedPos.x );
-      float lam1 = acos( rotatedPos.z );
+      highp float phi1 = atan( rotatedPos.y, rotatedPos.x );
+      highp float lam1 = acos( rotatedPos.z );
       
-      float phi2 = atan( otherObjectPositions[1], otherObjectPositions[0] );
-      float lam2 = acos( otherObjectPositions[2] );
+      highp float phi2 = atan( otherPosN.y, otherPosN.x );
+      highp float lam2 = acos( otherPosN.z );
       
-      float dPhi = phi2-phi1;
-      float dLam = lam2-lam1;
+      highp float dPhi = phi2-phi1;
+      highp float dLam = lam2-lam1;
       
-      float p1 = sin( dPhi/2.0 ) * sin( dPhi/2.0 ); 
-      float p2 = cos( phi1 )     * cos( phi2 );
-      float p3 = sin( dLam/2.0 ) * sin( dLam/2.0 );  
+      highp float havPhi = sin( dPhi/2.0 );
+      highp float havDLam = sin( dLam/2.0 );
+      
+      highp float p1 = havPhi*havPhi; 
+      highp float p2 = cos( phi1 )  * cos( phi2 );
+      highp float p3 = havDLam * havDLam;
+        
       float a = p1 + p2*p3;
-      float c = 2.0 * atan(sqrt(a), sqrt(1.0-a));
+      if( abs(a) > 0.99999 ){
+        a = a*0.999;
+      }
+      highp float p4 = sqrt( p1+p2*p3);
+      highp float c = 2.0 * atan(sqrt(a), sqrt(1.0-a));
               
-      float d = acos( sin(phi1)*sin(phi2) + cos(phi1) * cos(phi2) * cos(dLam) );
+            
+      float dX = rotatedPos.x-otherPosN.x;
+      float dY = rotatedPos.y-otherPosN.y;
+      float dZ = rotatedPos.z-otherPosN.z;
       
-      
-      float dX = rotatedPos.x-otherObjectPositions[0];
-      float dY = rotatedPos.y-otherObjectPositions[1];
-      float dZ = rotatedPos.z-otherObjectPositions[2];
-      
-      float c2 = sqrt( dX*dX+dY*dY+dZ*dZ );
-      
+      highp float c2 = sqrt( dX*dX+dY*dY+dZ*dZ );
       
       float r = 0.5+rotatedPos.z/2.0;
       float g = 0.5+rotatedPos.y/2.0;
       float b = 0.5+rotatedPos.x/2.0;
       
-      if( c < 0.2 ){
+      float c3 = acos( dot( rotatedPos , otherPosN ) );
+      
+      if( c3 < 0.1 ){
           r = 1.0;
       }
-      if( c2 < 0.2 ){
-          g = 1.0;
-      }
-      if( d < 0.2 ) {
-          b = 1.0;
-      }
-      
-      
-   
-      
+          
       vColor = vec4( r,g,b,1.0);
     }
   `;
