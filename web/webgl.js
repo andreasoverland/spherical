@@ -12,7 +12,7 @@ function createInitialPositions() {
         pos.initialLon = Math.random() * Math.PI * 2;
         pos.initialLat = -Math.PI * 0.5 + Math.random() * Math.PI;
         pos.initialDirection = Math.random() * Math.PI * 2;
-        pos.speed = Math.random()*2.5 + 2.5;
+        pos.speed = Math.random()*10.0 + 2.5;
         initialPositions.push(pos);
     }
 }
