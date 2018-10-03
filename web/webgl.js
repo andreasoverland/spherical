@@ -130,9 +130,9 @@ function main() {
       float c2 = sqrt( dX*dX+dY*dY+dZ*dZ );
       
       
-      float r = 0.5+aVertexPosition.z/2.0;
-      float g = 0.5+aVertexPosition.y/2.0;
-      float b = 0.5+aVertexPosition.x/2.0;
+      float r = 0.5+rotatedPos.z/2.0;
+      float g = 0.5+rotatedPos.y/2.0;
+      float b = 0.5+rotatedPos.x/2.0;
       
       if( c < 0.2 ){
           r = 1.0;
@@ -282,7 +282,7 @@ function drawScene(gl, programInfo, deltaTime) {
 
     mat4.translate(projectionMatrix, projectionMatrix, [0, 0, -5]);
     mat4.rotate(projectionMatrix, projectionMatrix, 0.2, [1, 0, 0]);
-    mat4.rotate(projectionMatrix, projectionMatrix, -Math.PI, [0, 1, 0]); // rotate camera around Y axis
+    mat4.rotate(projectionMatrix, projectionMatrix, -Math.PI*0.8, [0, 1, 0]); // rotate camera around Y axis
 
     const modelViewMatrix = mat4.create();
 
