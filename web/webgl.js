@@ -1,7 +1,7 @@
 let cubeRotation = 0.0;
 
 const initialPositions = [];
-const numPositions = 3;
+const numPositions = 30;
 
 const canvas = document.querySelector('#glcanvas');
 const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -12,7 +12,7 @@ function createInitialPositions() {
         pos.initialLon = Math.random() * Math.PI * 2;
         pos.initialLat = -Math.PI * 0.5 + Math.random() * Math.PI;
         pos.initialDirection = Math.random() * Math.PI * 2;
-        pos.speed = 5;
+        pos.speed = Math.random()*2.5 + 2.5;
         initialPositions.push(pos);
     }
 }
@@ -53,7 +53,7 @@ function updatePositions() {
         pos.y = (Math.cos(lat2) * Math.sin(lon2));
         pos.z = (Math.sin(lat2));
 
-        debugObjectPositions[n*3+0] = pos.x;
+        debugObjectPositions[n*3  ] = pos.x;
         debugObjectPositions[n*3+1] = pos.y;
         debugObjectPositions[n*3+2] = pos.z;
 
@@ -95,55 +95,20 @@ function main() {
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
     uniform float otherObjectPositions[` + numPositions*3  + `];
+    
     varying highp vec4 vColor;
     void main(void) {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
       
       vec4 rotatedPos = normalize( aVertexPosition );
-      vec4 otherPosV = vec4(otherObjectPositions[0],otherObjectPositions[1],otherObjectPositions[2],1.0);
-      vec4 otherPosN = normalize( otherPosV );
+      vec4 otherPosN = normalize( vec4(otherObjectPositions[0],otherObjectPositions[1],otherObjectPositions[2],1.0) );
+      vec4 otherPosN2 = normalize( vec4(otherObjectPositions[3],otherObjectPositions[4],otherObjectPositions[5],1.0) );
+      vec4 otherPosN3 = normalize( vec4(otherObjectPositions[6],otherObjectPositions[7],otherObjectPositions[8],1.0) );
       
-        
-      highp float phi1 = atan( rotatedPos.y, rotatedPos.x );
-      highp float lam1 = acos( rotatedPos.z );
+      float r = cos( acos( dot( rotatedPos , otherPosN ) ) );
+      float g = cos( acos( dot( rotatedPos , otherPosN2 ) ) );
+      float b = cos( acos( dot( rotatedPos , otherPosN3 ) ) );
       
-      highp float phi2 = atan( otherPosN.y, otherPosN.x );
-      highp float lam2 = acos( otherPosN.z );
-      
-      highp float dPhi = phi2-phi1;
-      highp float dLam = lam2-lam1;
-      
-      highp float havPhi = sin( dPhi/2.0 );
-      highp float havDLam = sin( dLam/2.0 );
-      
-      highp float p1 = havPhi*havPhi; 
-      highp float p2 = cos( phi1 )  * cos( phi2 );
-      highp float p3 = havDLam * havDLam;
-        
-      float a = p1 + p2*p3;
-      if( abs(a) > 0.99999 ){
-        a = a*0.999;
-      }
-      highp float p4 = sqrt( p1+p2*p3);
-      highp float c = 2.0 * atan(sqrt(a), sqrt(1.0-a));
-              
-            
-      float dX = rotatedPos.x-otherPosN.x;
-      float dY = rotatedPos.y-otherPosN.y;
-      float dZ = rotatedPos.z-otherPosN.z;
-      
-      highp float c2 = sqrt( dX*dX+dY*dY+dZ*dZ );
-      
-      float r = 0.5+rotatedPos.z/2.0;
-      float g = 0.5+rotatedPos.y/2.0;
-      float b = 0.5+rotatedPos.x/2.0;
-      
-      float c3 = acos( dot( rotatedPos , otherPosN ) );
-      
-      if( c3 < 0.1 ){
-          r = 1.0;
-      }
-          
       vColor = vec4( r,g,b,1.0);
     }
   `;
@@ -325,34 +290,8 @@ function drawScene(gl, programInfo, deltaTime) {
         gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
     }
 
-    mat4.translate(modelViewMatrix, modelViewMatrix, [debugObjectPositions[0], debugObjectPositions[1], debugObjectPositions[2]]);
-    mat4.scale(modelViewMatrix, modelViewMatrix, [0.05, 0.05, 0.05]);
 
-    gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
 
-    {
-        const vertexCount = numIndices;
-        const type = gl.UNSIGNED_SHORT;
-        const offset = 0;
-        gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
-    }
-
- /*
-    mat4.scale(modelViewMatrix, modelViewMatrix, [1.0/0.05, 1.0/0.05, 1.0/0.05]);
-    mat4.translate(modelViewMatrix, modelViewMatrix, [-debugObjectPositions[0], -debugObjectPositions[1], -debugObjectPositions[2]]);
-    mat4.translate(modelViewMatrix, modelViewMatrix, [debugObjectPositions[3], debugObjectPositions[4], debugObjectPositions[5]]);
-    mat4.scale(modelViewMatrix, modelViewMatrix, [0.05, 0.05, 0.05]);
-
-    gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
-
-    {
-        const vertexCount = numIndices;
-        const type = gl.UNSIGNED_SHORT;
-        const offset = 0;
-        gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
-    }
-
-*/
     // Update the rotation for the next draw
     updatePositions();
     cubeRotation += deltaTime;
