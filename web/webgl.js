@@ -106,9 +106,9 @@ function main() {
         f +=  otherObjectPositions[i*4+3] / ( 0.01 + r*r );
       }
       
-      float r =  0.5 - 0.5*cos(f/30.0) ;
-      float g =  0.5 - 0.5*sin( -f/20.0) ;
-      float b =  0.5 - 0.5*sin(f/30.0) ;
+      float r =  0.5 - 0.5*cos(f/25.0) ;
+      float g =  0.5 - 0.5*cos( -f/30.0) ;
+      float b =  0.6 - 0.4*cos(f/20.0) ;
       
       vColor = vec4( r,g,b,1.0);
     }
