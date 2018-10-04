@@ -91,25 +91,37 @@ function main() {
     uniform mat4 uProjectionMatrix;
     uniform float otherObjectPositions[` + numPositions*4  + `];
     varying vec4 vColor;
-    
+
     void main(void) {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-      
+
       vec4 rotatedPos = normalize( aVertexPosition );
       vec4 otherPositions[`+numPositions+`];
-      
-      float f = 0.0;
-      
+
+      float rf = 0.0;
+      float gf = 0.0;
+      float bf = 0.0;
+
+
       for( int i=0;i<`+numPositions+`;i++){
         vec4 tv = normalize( vec4(otherObjectPositions[i*4],otherObjectPositions[i*4+1],otherObjectPositions[i*4+2],1.0) );
         float r = acos( dot( rotatedPos , tv ) );
-        f +=  otherObjectPositions[i*4+3] / ( 0.01 + r*r );
+
+        if( i < `+numPositions+` / 3 ){
+          rf +=  otherObjectPositions[i*4+3] / ( 0.01 + r*r );
+        }
+        else if( i > 2*`+numPositions+`/3 ){
+          gf +=  otherObjectPositions[i*4+3] / ( 0.01 + r*r );
+        }
+        else {
+          bf +=  otherObjectPositions[i*4+3] / ( 0.01 + r*r );
+        }
       }
-      
-      float r =  0.5 - 0.5*cos(f/25.0) ;
-      float g =  0.5 - 0.5*cos( -f/30.0) ;
-      float b =  0.6 - 0.4*cos(f/20.0) ;
-      
+
+      float r =  0.5 - 0.5*cos(rf/25.0) ;
+      float g =  0.5 - 0.5*cos(gf/30.0) ;
+      float b =  0.6 - 0.4*cos(bf/20.0) ;
+
       vColor = vec4( r,g,b,1.0);
     }
   `;
